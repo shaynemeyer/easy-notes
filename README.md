@@ -1,36 +1,93 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Easy Notes
+
+A modern note-taking web application with rich text editing, authentication, and public sharing capabilities.
+
+## Features
+
+- Create, edit, and delete notes with rich text formatting
+- User authentication and session management
+- Public note sharing with unique URLs
+- Rich text editor powered by TipTap
+- SQLite database for efficient storage
+- Dark mode support
+
+## Tech Stack
+
+- **Runtime:** Bun
+- **Framework:** Next.js 16 with App Router
+- **Language:** TypeScript 5
+- **Styling:** TailwindCSS v4
+- **Database:** SQLite (via Bun's built-in client)
+- **Authentication:** better-auth 1.4.18
+- **Rich Text Editor:** TipTap 3.18.0
+- **Validation:** Zod 4.3.6
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- [Bun](https://bun.sh) installed on your system
+
+### Installation
+
+1. Clone the repository
+2. Install dependencies:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+bun install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Set up environment variables:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cp .env.example .env
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Initialize the database:
 
-## Learn More
+```bash
+npx @better-auth/cli migrate
+```
 
-To learn more about Next.js, take a look at the following resources:
+5. Run the development server:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+bun run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Open [http://localhost:3000](http://localhost:3000) to see the application.
 
-## Deploy on Vercel
+## Development Commands
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+bun run dev      # Start development server
+bun run build    # Build for production
+bun start        # Start production server
+bun run lint     # Lint code
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Project Structure
+
+```
+app/                    # Next.js App Router
+├── api/               # API route handlers
+├── (auth)/            # Authentication routes
+├── dashboard/         # User dashboard
+├── notes/[id]/        # Note editor
+└── p/[slug]/          # Public note viewer
+
+lib/                   # Server utilities
+├── db.ts              # SQLite connection
+├── notes.ts           # Note repository
+└── auth.ts            # Authentication config
+
+components/            # React components
+├── NoteEditor.tsx     # TipTap editor
+├── NoteList.tsx       # Notes list
+└── ShareToggle.tsx    # Sharing controls
+```
+
+## Documentation
+
+- See [CLAUDE.md](./CLAUDE.md) for development guidance
+- See [SPEC.md](./SPEC.md) for complete technical specification
