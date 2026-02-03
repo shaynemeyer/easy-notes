@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export async function getCurrentUser() {
   const session = await auth.api.getSession({
@@ -14,4 +15,20 @@ export async function requireAuth() {
     throw new Error("Unauthorized");
   }
   return user;
+}
+
+export async function protectRoute(requestedPath: string) {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    const callbackUrl = encodeURIComponent(requestedPath);
+    redirect(`/authenticate?callbackUrl=${callbackUrl}`);
+  }
+
+  return user;
+}
+
+export function isValidCallbackUrl(url: string): boolean {
+  // Ensure URL is relative and not protocol-relative (//evil.com)
+  return url.startsWith("/") && !url.startsWith("//");
 }

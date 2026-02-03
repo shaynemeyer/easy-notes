@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
 import { authClient } from "@/lib/auth-client";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,8 @@ interface AuthFormProps {
 
 export function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{
@@ -48,7 +50,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         const { data, error } = await authClient.signIn.email({
           email: validated.email,
           password: validated.password,
-          callbackURL: "/dashboard",
+          callbackURL: callbackUrl,
         });
 
         if (error) {
@@ -62,13 +64,13 @@ export function AuthForm({ mode }: AuthFormProps) {
           return;
         }
 
-        router.push("/dashboard");
+        router.push(callbackUrl);
       } else {
         const { data, error } = await authClient.signUp.email({
           email: validated.email,
           password: validated.password,
           name: validated.email,
-          callbackURL: "/dashboard",
+          callbackURL: callbackUrl,
         });
 
         if (error) {
@@ -82,12 +84,12 @@ export function AuthForm({ mode }: AuthFormProps) {
           return;
         }
 
-        router.push("/dashboard");
+        router.push(callbackUrl);
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
         const fieldErrors: { email?: string; password?: string } = {};
-        error.errors.forEach((err) => {
+        error.issues.forEach((err) => {
           const path = err.path[0] as "email" | "password";
           fieldErrors[path] = err.message;
         });
@@ -118,9 +120,13 @@ export function AuthForm({ mode }: AuthFormProps) {
     setPassword("");
     setErrors({});
     const newMode = mode === "login" ? "register" : "login";
-    router.push(
-      newMode === "register" ? "/authenticate?mode=register" : "/authenticate"
-    );
+    const currentCallbackUrl = searchParams.get("callbackUrl");
+
+    const url = currentCallbackUrl
+      ? `/authenticate?mode=${newMode}&callbackUrl=${currentCallbackUrl}`
+      : `/authenticate?mode=${newMode}`;
+
+    router.push(url);
   };
 
   return (

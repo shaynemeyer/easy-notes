@@ -1,4 +1,8 @@
-export default function DashboardPage() {
+import { protectRoute } from "@/lib/session";
+
+export default async function DashboardPage() {
+  const user = await protectRoute("/dashboard");
+
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">

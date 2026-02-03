@@ -9,19 +9,26 @@ export const metadata: Metadata = {
 };
 
 interface AuthenticatePageProps {
-  searchParams: Promise<{ mode?: string }>;
+  searchParams: Promise<{ mode?: string; callbackUrl?: string }>;
 }
 
 export default async function AuthenticatePage({
   searchParams,
 }: AuthenticatePageProps) {
   const user = await getCurrentUser();
+  const params = await searchParams;
 
   if (user) {
-    redirect("/dashboard");
+    const callbackUrl = params.callbackUrl || "/dashboard";
+
+    // Validate callback URL to prevent open redirects
+    if (callbackUrl && (!callbackUrl.startsWith("/") || callbackUrl.startsWith("//"))) {
+      redirect("/dashboard");
+    }
+
+    redirect(decodeURIComponent(callbackUrl));
   }
 
-  const params = await searchParams;
   const mode = params.mode === "register" ? "register" : "login";
 
   return <AuthForm mode={mode} />;

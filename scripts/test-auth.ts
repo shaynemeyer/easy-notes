@@ -4,6 +4,8 @@ const baseUrl = "http://localhost:3000";
 
 console.log("Testing authentication endpoints...\n");
 
+export {};
+
 // Test sign up
 console.log("1. Testing sign up...");
 const signupResponse = await fetch(`${baseUrl}/api/auth/sign-up/email`, {

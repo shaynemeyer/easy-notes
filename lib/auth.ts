@@ -28,4 +28,3 @@ export const auth = betterAuth({
 
 // Type inference helpers
 export type Session = typeof auth.$Infer.Session;
-export type User = typeof auth.$Infer.User;
