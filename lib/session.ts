@@ -28,6 +28,14 @@ export async function protectRoute(requestedPath: string) {
   return user;
 }
 
+export async function protectLayout() {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect("/authenticate");
+  }
+  return user;
+}
+
 export function isValidCallbackUrl(url: string): boolean {
   // Ensure URL is relative and not protocol-relative (//evil.com)
   return url.startsWith("/") && !url.startsWith("//");
