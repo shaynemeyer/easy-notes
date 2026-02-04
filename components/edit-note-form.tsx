@@ -4,19 +4,23 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { NoteEditor } from "@/components/note-editor";
+import Link from "next/link";
 
-interface NewNoteFormProps {
-  onSubmit: (formData: FormData) => Promise<void>;
+interface EditNoteFormProps {
+  noteId: string;
+  initialTitle: string;
+  initialContent: string;
+  onSubmit: (noteId: string, formData: FormData) => Promise<void>;
 }
 
-const EMPTY_TIPTAP_DOC = JSON.stringify({
-  type: "doc",
-  content: [{ type: "paragraph" }],
-});
-
-export function NewNoteForm({ onSubmit }: NewNoteFormProps) {
-  const [title, setTitle] = useState("Untitled note");
-  const [contentJson, setContentJson] = useState(EMPTY_TIPTAP_DOC);
+export function EditNoteForm({
+  noteId,
+  initialTitle,
+  initialContent,
+  onSubmit,
+}: EditNoteFormProps) {
+  const [title, setTitle] = useState(initialTitle);
+  const [contentJson, setContentJson] = useState(initialContent);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -30,13 +34,13 @@ export function NewNoteForm({ onSubmit }: NewNoteFormProps) {
       formData.append("title", title);
       formData.append("contentJson", contentJson);
 
-      await onSubmit(formData);
+      await onSubmit(noteId, formData);
     } catch (err) {
       // Ignore redirect errors (NEXT_REDIRECT)
       if (err instanceof Error && err.message.includes("NEXT_REDIRECT")) {
         return;
       }
-      setError(err instanceof Error ? err.message : "Failed to create note");
+      setError(err instanceof Error ? err.message : "Failed to update note");
       setIsSubmitting(false);
     }
   };
@@ -54,11 +58,6 @@ export function NewNoteForm({ onSubmit }: NewNoteFormProps) {
         name="title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        onFocus={(e) => {
-          if (e.target.value === "Untitled note") {
-            setTitle("");
-          }
-        }}
         placeholder="Enter note title..."
       />
 
@@ -73,9 +72,16 @@ export function NewNoteForm({ onSubmit }: NewNoteFormProps) {
         />
       </div>
 
-      <Button type="submit" loading={isSubmitting} disabled={isSubmitting}>
-        Create Note
-      </Button>
+      <div className="flex gap-3">
+        <Button type="submit" loading={isSubmitting} disabled={isSubmitting}>
+          Save Changes
+        </Button>
+        <Link href={`/notes/${noteId}`} className="w-full">
+          <Button type="button" variant="secondary" disabled={isSubmitting}>
+            Cancel
+          </Button>
+        </Link>
+      </div>
     </form>
   );
 }

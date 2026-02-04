@@ -163,6 +163,7 @@ function EditorButton({
       type="button"
       onClick={onClick}
       title={title}
+      tabIndex={-1}
       className={`px-3 py-1.5 text-sm font-medium rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
         isActive
           ? "bg-blue-600 text-white"

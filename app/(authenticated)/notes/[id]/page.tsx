@@ -3,6 +3,8 @@ import { getNoteById } from "@/lib/notes";
 import { notFound } from "next/navigation";
 import { formatNoteDate } from "@/lib/note-utils";
 import { NoteEditor } from "@/components/note-editor";
+import { DeleteNoteButton } from "@/components/delete-note-button";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default async function NotePage({
@@ -41,6 +43,13 @@ export default async function NotePage({
           </svg>
           Back to Dashboard
         </Link>
+      </div>
+
+      <div className="flex gap-3 mb-6">
+        <Link href={`/notes/${note.id}/edit`} className="w-full">
+          <Button variant="secondary">Edit</Button>
+        </Link>
+        <DeleteNoteButton noteId={note.id} noteTitle={note.title} />
       </div>
 
       <div className="mb-8">

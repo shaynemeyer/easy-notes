@@ -1,7 +1,7 @@
 "use server";
 
 import { requireAuth } from "@/lib/session";
-import { createNote } from "@/lib/notes";
+import { createNote, updateNote, deleteNote } from "@/lib/notes";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
@@ -44,4 +44,35 @@ export async function createNoteAction(formData: FormData) {
     }
     throw error;
   }
+}
+
+export async function updateNoteAction(noteId: string, formData: FormData) {
+  const user = await requireAuth();
+  const title = formData.get("title") as string;
+  const contentJson = formData.get("contentJson") as string;
+
+  try {
+    const validated = noteSchema.parse({ title, contentJson });
+    const note = await updateNote(user.id, noteId, {
+      title: validated.title,
+      contentJson: validated.contentJson,
+    });
+
+    if (!note) {
+      throw new Error("Note not found");
+    }
+
+    redirect(`/notes/${noteId}`);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      throw new Error(error.issues[0].message);
+    }
+    throw error;
+  }
+}
+
+export async function deleteNoteAction(noteId: string) {
+  const user = await requireAuth();
+  await deleteNote(user.id, noteId);
+  redirect("/dashboard");
 }
