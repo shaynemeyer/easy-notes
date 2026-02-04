@@ -1,0 +1,5 @@
+{
+  "vitest.enable": true,
+  "vitest.commandLine": "bun run vitest",
+  "testing.automaticallyOpenPeekView": "never"
+}

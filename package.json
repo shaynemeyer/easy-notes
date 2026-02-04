@@ -7,7 +7,12 @@
     "build": "bun --bun next build",
     "start": "bun --bun next start",
     "lint": "eslint",
-    "format": "oxfmt"
+    "format": "oxfmt",
+    "test": "bun run test:unit && bun test test/integration",
+    "test:unit": "vitest run test/unit",
+    "test:integration": "bun test test/integration",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@tiptap/pm": "^3.18.0",
@@ -26,8 +31,10 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.0.18",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
+    "happy-dom": "^20.5.0",
     "oxfmt": "^0.28.0",
     "tailwindcss": "^4",
     "typescript": "^5",

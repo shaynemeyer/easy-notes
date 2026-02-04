@@ -27,6 +27,24 @@ bun start
 
 # Lint code
 bun run lint
+
+# Format code with oxfmt
+bun run format
+
+# Run all tests (unit + integration)
+bun run test
+
+# Run unit tests only
+bun run test:unit
+
+# Run integration tests only
+bun run test:integration
+
+# Watch mode for tests
+bun run test:watch
+
+# Test coverage report
+bun run test:coverage
 ```
 
 ## Tech Stack
@@ -39,40 +57,61 @@ bun run lint
 - **Auth:** better-auth 1.4.18
 - **Rich Text Editor:** TipTap 3.18.0
 - **Validation:** Zod 4.3.6
+- **Testing:** Vitest 4.0.18 with happy-dom and coverage (v8)
+- **Formatting:** oxfmt 0.28.0
 
 ## Architecture
 
 ### Directory Structure
 
 ```ascii
-app/                    # Next.js App Router
-├── api/               # API route handlers (to be created)
-├── (auth)/            # Auth routes: login, register (to be created)
-├── dashboard/         # Authenticated notes list (to be created)
-├── notes/[id]/        # Note editor page (to be created)
-├── p/[slug]/          # Public note viewer (to be created)
-├── layout.tsx         # Root layout with fonts
-├── page.tsx           # Landing page
-└── globals.css        # Global styles + TailwindCSS
+app/                          # Next.js App Router
+├── api/
+│   └── auth/[...all]/       # better-auth route handler
+├── (authenticated)/         # Auth-protected routes
+│   ├── dashboard/           # Notes list page
+│   ├── notes/
+│   │   ├── actions.ts       # Server Actions (create, update, delete)
+│   │   ├── new/             # Create note page
+│   │   └── [id]/
+│   │       ├── page.tsx     # View note
+│   │       └── edit/        # Edit note page
+│   └── layout.tsx           # Authenticated layout with header
+├── authenticate/            # Login/register page
+├── p/[slug]/               # Public note viewer (no auth)
+├── layout.tsx              # Root layout with fonts
+├── page.tsx                # Landing page
+└── globals.css             # Global styles + TailwindCSS
 
-lib/                   # Server utilities (to be created)
-├── db.ts              # SQLite connection & helpers
-├── notes.ts           # Note repository functions
-└── auth.ts            # better-auth configuration
+lib/                        # Server utilities
+├── db.ts                   # SQLite connection & query helpers
+├── notes.ts                # Note repository (CRUD + public sharing)
+├── session.ts              # requireAuth() helper
+├── note-utils.ts           # Note utility functions
+├── auth.ts                 # better-auth server config
+└── auth-client.ts          # better-auth client config
 
-components/            # React components (to be created)
-├── NoteEditor.tsx     # TipTap editor wrapper
-├── NoteList.tsx       # List of user notes
-├── ShareToggle.tsx    # Public sharing toggle
-└── DeleteNoteButton.tsx
+components/                 # React components
+├── ui/                     # shadcn-style UI primitives
+│   ├── button.tsx
+│   ├── dialog.tsx
+│   └── input.tsx
+├── note-editor.tsx         # TipTap editor wrapper
+├── note-card.tsx           # Note display card
+├── new-note-form.tsx       # Create note form
+├── edit-note-form.tsx      # Edit note form
+├── share-note-toggle.tsx   # Public sharing toggle
+├── delete-note-button.tsx  # Delete confirmation dialog
+├── auth-form.tsx           # Login/register form
+└── header.tsx              # App header with navigation
 ```
 
 ### Data Flow
 
-1. **Authentication:** better-auth manages user sessions; server components/API routes use `getCurrentUser()` to enforce auth
-2. **Database Access:** `lib/db.ts` exports singleton SQLite connection; `lib/notes.ts` contains repository functions with raw SQL queries
-3. **API Layer:** Route handlers in `app/api/notes/` expose REST-like JSON endpoints
-4. **Frontend:** Server components fetch data; client components handle TipTap editor and interactive UI
+1. **Authentication:** better-auth manages user sessions; server components and Server Actions use `requireAuth()` from `lib/session.ts` to enforce auth
+2. **Database Access:** `lib/db.ts` exports SQLite query helpers; `lib/notes.ts` contains repository functions with raw SQL queries and user ownership checks
+3. **API Layer:** Next.js Server Actions in `app/(authenticated)/notes/actions.ts` handle note mutations (create, update, delete) with form data and Zod validation
+4. **Frontend:** Server components fetch data directly from repository; client components handle TipTap editor, forms, and interactive UI
 
 ### Database Schema
 
@@ -102,23 +141,28 @@ CREATE INDEX idx_notes_public_slug ON notes(public_slug);
 CREATE INDEX idx_notes_is_public ON notes(is_public);
 ```
 
-### API Routes (to be implemented)
+### Server Actions
 
-All routes under `/api/notes` require authentication except public note reads.
+All Server Actions in `app/(authenticated)/notes/actions.ts` require authentication and enforce user ownership:
 
-- `GET /api/notes` - List current user's notes
-- `POST /api/notes` - Create new note
-- `GET /api/notes/:id` - Get single note (auth required, owner check)
-- `PUT /api/notes/:id` - Update note title/content
-- `DELETE /api/notes/:id` - Delete note
-- `POST /api/notes/:id/share` - Toggle public sharing (generates/removes `public_slug`)
-- `GET /api/public-notes/:slug` - Get public note (no auth)
+- `createNoteAction(formData)` - Create new note with title, content, and optional public flag
+- `updateNoteAction(noteId, formData)` - Update note title, content, or public status
+- `deleteNoteAction(noteId)` - Delete note and redirect to dashboard
 
-**Security:** All authenticated endpoints MUST filter queries by `user_id` from session to prevent cross-user access.
+**Server-side data fetching** (used in Server Components):
+
+- `getNotesByUser(userId)` - List all notes for authenticated user
+- `getNoteById(userId, noteId)` - Get single note (enforces ownership)
+- `getNoteByPublicSlug(slug)` - Get public note by slug (no auth required)
+- `setNotePublic(userId, noteId, isPublic)` - Toggle public sharing
+
+**Security:** All authenticated functions enforce user ownership via `userId` parameter checks in SQL queries (`WHERE user_id = ?`).
 
 ## TipTap Integration
 
 ### Editor Configuration
+
+The `NoteEditor` component (`components/note-editor.tsx`) wraps TipTap with:
 
 ```typescript
 import { useEditor, EditorContent } from '@tiptap/react';
@@ -130,23 +174,37 @@ const editor = useEditor({
       heading: { levels: [1, 2, 3] },
     }),
   ],
-  content: JSON.parse(contentJson), // Load from DB
+  content: parseContent(initialContent), // Parse JSON from DB
+  editable: true, // Can be false for read-only view
+  immediatelyRender: false,
   onUpdate: ({ editor }) => {
-    const json = editor.getJSON();
-    // Save to DB via API
+    const json = JSON.stringify(editor.getJSON());
+    onChange(json); // Callback to save
   },
 });
 ```
 
 ### Supported Formatting
 
-- Bold, Italic
-- Headings (H1, H2, H3)
-- Inline code, code blocks
-- Bullet lists
-- Horizontal rules
+The editor toolbar provides:
 
-**Storage:** Always store as `JSON.stringify(editor.getJSON())` in DB; parse when loading.
+- **Text styles:** Bold, Italic, Inline code
+- **Headings:** H1, H2, H3
+- **Lists:** Bullet lists, ordered lists
+- **Blocks:** Code blocks, blockquotes, horizontal rules
+
+### Storage Format
+
+**Always** store as `JSON.stringify(editor.getJSON())` in `notes.content_json` column. The `parseContent()` helper safely parses JSON with fallback to empty document:
+
+```typescript
+{
+  type: 'doc',
+  content: [{ type: 'paragraph' }]
+}
+```
+
+**Never** store HTML or plain text - use TipTap's JSON format for consistent rendering.
 
 ## Path Aliases
 
@@ -157,24 +215,45 @@ const editor = useEditor({
 
 ### Database Initialization
 
-Before running the app, initialize SQLite database:
+Run the migration script to set up all required tables:
 
-1. Run `npx @better-auth/cli migrate` to create auth tables
-2. Create `notes` table and indexes manually or via init script
+```bash
+bun scripts/migrate.ts
+```
+
+This creates:
+
+- All better-auth tables (user, session, account, verification)
+- Notes table with proper indexes
+- Foreign key constraints
+- WAL mode for better concurrency
+
+Database location defaults to `data/app.db` (set via `DATABASE_PATH` env var).
 
 ### better-auth Setup
 
-Configure in `lib/auth.ts` with:
+Configured in `lib/auth.ts` with:
 
 - SQLite adapter pointing to same DB file
-- Email/password provider
-- Session management
+- Email/password credential provider
+- Session management with HTTP-only cookies
 
-Do NOT modify better-auth table schemas; it will break authentication.
+**IMPORTANT:** Do NOT modify better-auth table schemas manually - use the migrate script which matches better-auth's expectations.
+
+### Authentication Flow
+
+- Client-side auth utilities in `lib/auth-client.ts`
+- Server-side session validation via `requireAuth()` in `lib/session.ts`
+- Protected routes wrapped in `(authenticated)` layout group
+- Public routes: landing page (`/`), authenticate (`/authenticate`), public notes (`/p/[slug]`)
 
 ### Public Note Slugs
 
-When enabling public sharing (`is_public = 1`), generate a random slug with sufficient entropy (16+ chars) to prevent guessing. Use `nanoid()` or similar.
+Public sharing generates a 16-character random slug using `nanoid(16)`. Slugs are:
+
+- Generated on first enable or if missing
+- Persisted even when sharing is disabled (allows re-enabling with same URL)
+- Checked with `is_public = 1` flag for access control
 
 ### Security Requirements
 
@@ -190,14 +269,75 @@ TailwindCSS v4 is configured with custom CSS variables in `app/globals.css`:
 - Theme variables: `--background`, `--foreground`
 - Font families: `--font-geist-sans`, `--font-geist-mono`
 - Supports light/dark mode via `@media (prefers-color-scheme: dark)`
+- Editor uses Tailwind Typography plugin for prose rendering
+
+### Testing
+
+Vitest is configured for both unit and integration tests:
+
+- **Unit tests:** Located in `test/unit/`, run with `bun run test:unit`
+- **Integration tests:** Located in `test/integration/`, run with Bun's test runner
+- **Environment:** Uses `happy-dom` for DOM simulation in unit tests
+- **Coverage:** Generate reports with `bun run test:coverage`
+
+Write tests for:
+
+- Repository functions in `lib/notes.ts`
+- Server Actions validation
+- Component rendering and interactions
+- Public sharing logic
+
+### Code Formatting
+
+The project uses `oxfmt` (oxidized formatter) for code formatting:
+
+```bash
+# Format all files
+bun run format
+```
+
+A post-tool-use hook automatically runs the formatter after file changes.
 
 ## Environment Setup
 
-Create `.env` file (see `.env.example`) for:
+Create `.env.local` file with:
 
-- Database path
-- better-auth secrets
-- Any API keys
+```env
+# Database location (defaults to data/app.db if not set)
+DATABASE_PATH=data/app.db
+
+# better-auth configuration
+BETTER_AUTH_SECRET=your-secret-key-here
+BETTER_AUTH_URL=http://localhost:3000
+
+# Node environment
+NODE_ENV=development
+```
+
+Generate a secure `BETTER_AUTH_SECRET` with `openssl rand -base64 32`.
+
+## Implementation Status
+
+**✅ Fully Implemented:**
+
+- User authentication (sign up, login, sessions)
+- Dashboard with note listing
+- Create, read, update, delete notes
+- Rich-text editing with TipTap (toolbar with formatting options)
+- Public note sharing with unguessable slugs
+- Public note viewing (no auth required)
+- Server Actions for all mutations
+- SQLite database with proper indexes
+- Responsive UI with dark mode support
+- Testing setup (Vitest + happy-dom)
+- Code formatting with oxfmt
+
+**Architecture Decisions:**
+
+- Using **Server Actions** instead of REST API routes for better integration with Next.js App Router
+- All repository functions enforce user ownership at the database query level
+- TipTap content stored as JSON (not HTML) for consistency
+- Public slugs persist across enable/disable cycles
 
 ## Reference Documentation
 
