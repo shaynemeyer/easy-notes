@@ -1,5 +1,5 @@
-import { query, get, run, type NoteRow } from "@/lib/db";
-import { nanoid } from "nanoid";
+import { query, get, run, type NoteRow } from '@/lib/db';
+import { nanoid } from 'nanoid';
 
 // Application model type with proper camelCase and boolean mapping
 export type Note = {
@@ -29,8 +29,8 @@ function rowToNote(row: NoteRow): Note {
 
 // Default empty TipTap document
 const EMPTY_TIPTAP_DOC = JSON.stringify({
-  type: "doc",
-  content: [{ type: "paragraph" }],
+  type: 'doc',
+  content: [{ type: 'paragraph' }],
 });
 
 /**
@@ -38,22 +38,22 @@ const EMPTY_TIPTAP_DOC = JSON.stringify({
  */
 export async function createNote(
   userId: string,
-  data: { title?: string; contentJson?: string } = {}
+  data: { title?: string; contentJson?: string } = {},
 ): Promise<Note> {
   const id = nanoid();
-  const title = data.title || "Untitled note";
+  const title = data.title || 'Untitled note';
   const contentJson = data.contentJson || EMPTY_TIPTAP_DOC;
   const now = new Date().toISOString();
 
   run(
     `INSERT INTO notes (id, user_id, title, content_json, is_public, public_slug, created_at, updated_at)
      VALUES (?, ?, ?, ?, 0, NULL, ?, ?)`,
-    [id, userId, title, contentJson, now, now]
+    [id, userId, title, contentJson, now, now],
   );
 
-  const row = get<NoteRow>("SELECT * FROM notes WHERE id = ?", [id]);
+  const row = get<NoteRow>('SELECT * FROM notes WHERE id = ?', [id]);
   if (!row) {
-    throw new Error("Failed to create note");
+    throw new Error('Failed to create note');
   }
 
   return rowToNote(row);
@@ -62,14 +62,8 @@ export async function createNote(
 /**
  * Get a single note by ID (enforces user ownership)
  */
-export async function getNoteById(
-  userId: string,
-  noteId: string
-): Promise<Note | null> {
-  const row = get<NoteRow>(
-    "SELECT * FROM notes WHERE id = ? AND user_id = ?",
-    [noteId, userId]
-  );
+export async function getNoteById(userId: string, noteId: string): Promise<Note | null> {
+  const row = get<NoteRow>('SELECT * FROM notes WHERE id = ? AND user_id = ?', [noteId, userId]);
 
   return row ? rowToNote(row) : null;
 }
@@ -78,10 +72,9 @@ export async function getNoteById(
  * Get all notes for a user
  */
 export async function getNotesByUser(userId: string): Promise<Note[]> {
-  const rows = query<NoteRow>(
-    "SELECT * FROM notes WHERE user_id = ? ORDER BY updated_at DESC",
-    [userId]
-  );
+  const rows = query<NoteRow>('SELECT * FROM notes WHERE user_id = ? ORDER BY updated_at DESC', [
+    userId,
+  ]);
 
   return rows.map(rowToNote);
 }
@@ -92,7 +85,7 @@ export async function getNotesByUser(userId: string): Promise<Note[]> {
 export async function updateNote(
   userId: string,
   noteId: string,
-  data: Partial<{ title: string; contentJson: string }>
+  data: Partial<{ title: string; contentJson: string }>,
 ): Promise<Note | null> {
   // First verify the note exists and belongs to the user
   const existing = await getNoteById(userId, noteId);
@@ -104,12 +97,12 @@ export async function updateNote(
   const params: any[] = [];
 
   if (data.title !== undefined) {
-    updates.push("title = ?");
+    updates.push('title = ?');
     params.push(data.title);
   }
 
   if (data.contentJson !== undefined) {
-    updates.push("content_json = ?");
+    updates.push('content_json = ?');
     params.push(data.contentJson);
   }
 
@@ -118,16 +111,13 @@ export async function updateNote(
   }
 
   // Always update the updated_at timestamp
-  updates.push("updated_at = ?");
+  updates.push('updated_at = ?');
   params.push(new Date().toISOString());
 
   // Add WHERE clause parameters
   params.push(noteId, userId);
 
-  run(
-    `UPDATE notes SET ${updates.join(", ")} WHERE id = ? AND user_id = ?`,
-    params
-  );
+  run(`UPDATE notes SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`, params);
 
   return getNoteById(userId, noteId);
 }
@@ -135,11 +125,8 @@ export async function updateNote(
 /**
  * Delete a note (enforces user ownership)
  */
-export async function deleteNote(
-  userId: string,
-  noteId: string
-): Promise<void> {
-  run("DELETE FROM notes WHERE id = ? AND user_id = ?", [noteId, userId]);
+export async function deleteNote(userId: string, noteId: string): Promise<void> {
+  run('DELETE FROM notes WHERE id = ? AND user_id = ?', [noteId, userId]);
 }
 
 /**
@@ -148,7 +135,7 @@ export async function deleteNote(
 export async function setNotePublic(
   userId: string,
   noteId: string,
-  isPublic: boolean
+  isPublic: boolean,
 ): Promise<Note | null> {
   // First verify the note exists and belongs to the user
   const existing = await getNoteById(userId, noteId);
@@ -163,15 +150,16 @@ export async function setNotePublic(
     const publicSlug = existing.publicSlug || nanoid(16);
 
     run(
-      "UPDATE notes SET is_public = 1, public_slug = ?, updated_at = ? WHERE id = ? AND user_id = ?",
-      [publicSlug, now, noteId, userId]
+      'UPDATE notes SET is_public = 1, public_slug = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+      [publicSlug, now, noteId, userId],
     );
   } else {
     // Disable public sharing - keep slug but set is_public to 0
-    run(
-      "UPDATE notes SET is_public = 0, updated_at = ? WHERE id = ? AND user_id = ?",
-      [now, noteId, userId]
-    );
+    run('UPDATE notes SET is_public = 0, updated_at = ? WHERE id = ? AND user_id = ?', [
+      now,
+      noteId,
+      userId,
+    ]);
   }
 
   return getNoteById(userId, noteId);
@@ -180,13 +168,8 @@ export async function setNotePublic(
 /**
  * Get a public note by its slug (no authentication required)
  */
-export async function getNoteByPublicSlug(
-  slug: string
-): Promise<Note | null> {
-  const row = get<NoteRow>(
-    "SELECT * FROM notes WHERE public_slug = ? AND is_public = 1",
-    [slug]
-  );
+export async function getNoteByPublicSlug(slug: string): Promise<Note | null> {
+  const row = get<NoteRow>('SELECT * FROM notes WHERE public_slug = ? AND is_public = 1', [slug]);
 
   return row ? rowToNote(row) : null;
 }

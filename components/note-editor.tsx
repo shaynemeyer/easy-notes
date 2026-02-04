@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import { useEffect } from "react";
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import { useEffect } from 'react';
 
 interface NoteEditorProps {
   initialContent?: string;
@@ -10,11 +10,7 @@ interface NoteEditorProps {
   editable?: boolean;
 }
 
-export function NoteEditor({
-  initialContent,
-  onChange,
-  editable = true,
-}: NoteEditorProps) {
+export function NoteEditor({ initialContent, onChange, editable = true }: NoteEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -28,8 +24,7 @@ export function NoteEditor({
     immediatelyRender: false,
     editorProps: {
       attributes: {
-        class:
-          "prose prose-zinc dark:prose-invert max-w-none min-h-[300px] p-4 focus:outline-none",
+        class: 'prose prose-zinc dark:prose-invert max-w-none min-h-[300px] p-4 focus:outline-none',
       },
     },
     onUpdate: ({ editor }) => {
@@ -52,91 +47,85 @@ export function NoteEditor({
   }
 
   return (
-    <div className="border border-zinc-300 dark:border-zinc-700 rounded-lg overflow-hidden bg-white dark:bg-zinc-800">
+    <div className='border border-zinc-300 dark:border-zinc-700 rounded-lg overflow-hidden bg-white dark:bg-zinc-800'>
       {editable && (
-        <div className="flex flex-wrap gap-1 p-2 border-b border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900">
+        <div className='flex flex-wrap gap-1 p-2 border-b border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900'>
           <EditorButton
             onClick={() => editor.chain().focus().toggleBold().run()}
-            isActive={editor.isActive("bold")}
-            title="Bold"
+            isActive={editor.isActive('bold')}
+            title='Bold'
           >
             <strong>B</strong>
           </EditorButton>
           <EditorButton
             onClick={() => editor.chain().focus().toggleItalic().run()}
-            isActive={editor.isActive("italic")}
-            title="Italic"
+            isActive={editor.isActive('italic')}
+            title='Italic'
           >
             <em>I</em>
           </EditorButton>
           <EditorButton
             onClick={() => editor.chain().focus().toggleCode().run()}
-            isActive={editor.isActive("code")}
-            title="Code"
+            isActive={editor.isActive('code')}
+            title='Code'
           >
-            {"<>"}
+            {'<>'}
           </EditorButton>
-          <div className="w-px h-8 bg-zinc-300 dark:bg-zinc-700 mx-1" />
+          <div className='w-px h-8 bg-zinc-300 dark:bg-zinc-700 mx-1' />
           <EditorButton
-            onClick={() =>
-              editor.chain().focus().toggleHeading({ level: 1 }).run()
-            }
-            isActive={editor.isActive("heading", { level: 1 })}
-            title="Heading 1"
+            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+            isActive={editor.isActive('heading', { level: 1 })}
+            title='Heading 1'
           >
             H1
           </EditorButton>
           <EditorButton
-            onClick={() =>
-              editor.chain().focus().toggleHeading({ level: 2 }).run()
-            }
-            isActive={editor.isActive("heading", { level: 2 })}
-            title="Heading 2"
+            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+            isActive={editor.isActive('heading', { level: 2 })}
+            title='Heading 2'
           >
             H2
           </EditorButton>
           <EditorButton
-            onClick={() =>
-              editor.chain().focus().toggleHeading({ level: 3 }).run()
-            }
-            isActive={editor.isActive("heading", { level: 3 })}
-            title="Heading 3"
+            onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+            isActive={editor.isActive('heading', { level: 3 })}
+            title='Heading 3'
           >
             H3
           </EditorButton>
-          <div className="w-px h-8 bg-zinc-300 dark:bg-zinc-700 mx-1" />
+          <div className='w-px h-8 bg-zinc-300 dark:bg-zinc-700 mx-1' />
           <EditorButton
             onClick={() => editor.chain().focus().toggleBulletList().run()}
-            isActive={editor.isActive("bulletList")}
-            title="Bullet List"
+            isActive={editor.isActive('bulletList')}
+            title='Bullet List'
           >
             •
           </EditorButton>
           <EditorButton
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            isActive={editor.isActive("orderedList")}
-            title="Numbered List"
+            isActive={editor.isActive('orderedList')}
+            title='Numbered List'
           >
             1.
           </EditorButton>
           <EditorButton
             onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-            isActive={editor.isActive("codeBlock")}
-            title="Code Block"
+            isActive={editor.isActive('codeBlock')}
+            title='Code Block'
           >
-            {"{ }"}
+            {'{ }'}
           </EditorButton>
           <EditorButton
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            isActive={editor.isActive("blockquote")}
-            title="Quote"
+            isActive={editor.isActive('blockquote')}
+            title='Quote'
           >
             "
           </EditorButton>
-          <div className="w-px h-8 bg-zinc-300 dark:bg-zinc-700 mx-1" />
+          <div className='w-px h-8 bg-zinc-300 dark:bg-zinc-700 mx-1' />
           <EditorButton
             onClick={() => editor.chain().focus().setHorizontalRule().run()}
-            title="Horizontal Rule"
+            title='Horizontal Rule'
           >
             —
           </EditorButton>
@@ -160,14 +149,14 @@ function EditorButton({
 }) {
   return (
     <button
-      type="button"
+      type='button'
       onClick={onClick}
       title={title}
       tabIndex={-1}
       className={`px-3 py-1.5 text-sm font-medium rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
         isActive
-          ? "bg-blue-600 text-white"
-          : "bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+          ? 'bg-blue-600 text-white'
+          : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700'
       }`}
     >
       {children}
@@ -178,14 +167,14 @@ function EditorButton({
 function parseContent(content?: string) {
   if (!content) {
     return {
-      type: "doc",
-      content: [{ type: "paragraph" }],
+      type: 'doc',
+      content: [{ type: 'paragraph' }],
     };
   }
 
   try {
     const parsed = JSON.parse(content);
-    if (parsed.type === "doc" && Array.isArray(parsed.content)) {
+    if (parsed.type === 'doc' && Array.isArray(parsed.content)) {
       return parsed;
     }
   } catch (e) {
@@ -193,7 +182,7 @@ function parseContent(content?: string) {
   }
 
   return {
-    type: "doc",
-    content: [{ type: "paragraph" }],
+    type: 'doc',
+    content: [{ type: 'paragraph' }],
   };
 }

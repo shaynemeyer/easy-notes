@@ -93,7 +93,7 @@ const { data, error } = await authClient.signIn.email({
 const { data, error } = await authClient.signUp.email({
   email,
   password,
-  name: email,  // Use email as name (better-auth requires name)
+  name: email, // Use email as name (better-auth requires name)
   callbackURL: '/dashboard',
 });
 ```

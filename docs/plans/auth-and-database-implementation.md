@@ -99,12 +99,14 @@ sequenceDiagram
 ### 1. Environment Configuration
 
 **Files Modified:**
+
 - `next.config.ts` - Clean configuration (no serverExternalPackages needed with Bun runtime)
 - `.gitignore` - Added `/data`, `*.db`, `*.db-shm`, `*.db-wal`
 - `.env` - Created with secure credentials
 - `package.json` - Updated dev script to `bun --bun next dev`
 
 **Environment Variables:**
+
 ```env
 DATABASE_PATH=data/app.db
 BETTER_AUTH_SECRET=<32-char-random-string>
@@ -116,12 +118,14 @@ BETTER_AUTH_URL=http://localhost:3000
 **File:** `lib/db.ts`
 
 **Features:**
+
 - Singleton pattern for database connection
 - Bun's built-in SQLite with WAL mode
 - Auto-creation of notes table with indexes
 - TypeScript interface for type safety
 
 **Schema:**
+
 ```sql
 CREATE TABLE notes (
   id TEXT PRIMARY KEY,
@@ -136,6 +140,7 @@ CREATE TABLE notes (
 ```
 
 **Indexes:**
+
 - `idx_notes_user_id` - For user-specific queries
 - `idx_notes_public_slug` - For public note lookups
 - `idx_notes_is_public` - For filtering public notes
@@ -147,18 +152,20 @@ CREATE TABLE notes (
 **Key Decision:** Used lazy-loading with `require("bun:sqlite")` to avoid Next.js bundling issues.
 
 **Configuration:**
+
 - Database: Bun SQLite (lazy-loaded)
 - Provider: Email/Password with auto sign-in
 - Session: 7-day expiry, 1-day refresh, 5-minute cookie cache
 - Security: HTTPOnly cookies, random session tokens
 
 **Implementation Pattern:**
+
 ```typescript
 // Lazy-load to avoid bundling issues
 let dbInstance: any = null;
 function getDatabase() {
   if (!dbInstance) {
-    const { Database } = require("bun:sqlite");
+    const { Database } = require('bun:sqlite');
     dbInstance = new Database(dbPath);
   }
   return dbInstance;
@@ -175,10 +182,12 @@ export const auth = betterAuth({
 **File:** `lib/session.ts`
 
 **Functions:**
+
 - `getCurrentUser()` - Returns user or null (for optional auth)
 - `requireAuth()` - Returns user or throws error (for protected routes)
 
 **Usage:**
+
 ```typescript
 // Optional authentication
 const user = await getCurrentUser();
@@ -195,15 +204,17 @@ const user = await requireAuth(); // Throws if not authenticated
 **File:** `app/api/auth/[...all]/route.ts`
 
 **Endpoints Created:**
+
 - `POST /api/auth/sign-up/email` - User registration
 - `POST /api/auth/sign-in/email` - User authentication
 - `POST /api/auth/sign-out` - Logout
 - `GET /api/auth/get-session` - Retrieve current session
 
 **Implementation:**
+
 ```typescript
-import { auth } from "@/lib/auth";
-import { toNextJsHandler } from "better-auth/next-js";
+import { auth } from '@/lib/auth';
+import { toNextJsHandler } from 'better-auth/next-js';
 
 export const { GET, POST } = toNextJsHandler(auth);
 ```
@@ -215,6 +226,7 @@ export const { GET, POST } = toNextJsHandler(auth);
 **Tables Created:**
 
 **better-auth tables:**
+
 ```sql
 user (id, email, emailVerified, name, createdAt, updatedAt, image)
 session (id, userId, expiresAt, token, ipAddress, userAgent, createdAt, updatedAt)
@@ -223,6 +235,7 @@ verification (id, identifier, value, expiresAt, createdAt, updatedAt)
 ```
 
 **Application tables:**
+
 ```sql
 notes (id, user_id, title, content_json, is_public, public_slug, created_at, updated_at)
 ```
@@ -296,11 +309,13 @@ erDiagram
 ### 7. Testing & Verification
 
 **Files Created:**
+
 - `scripts/test-auth.ts` - Automated authentication testing
 - `scripts/check-db.ts` - Database structure verification
 - `app/test-session/page.tsx` - Session helper test page
 
 **Test Results:**
+
 ```
 ✅ User registration (POST /api/auth/sign-up/email)
 ✅ User authentication (POST /api/auth/sign-in/email)
@@ -353,6 +368,7 @@ graph TD
 ```
 
 **Solutions Attempted:**
+
 1. ❌ `serverExternalPackages` config - Created weird package names
 2. ❌ `@libsql/client` - Database adapter initialization failed
 3. ❌ `better-sqlite3` - Native bindings not found by Next.js
@@ -361,6 +377,7 @@ graph TD
 **Final Solution:** ✅ Lazy-load Bun's SQLite using `require()` to avoid bundling
 
 **Why It Works:**
+
 - Bun runtime (`bun --bun next dev`) provides native `bun:sqlite`
 - `require()` defers loading until runtime (not build time)
 - Next.js doesn't try to bundle the module
@@ -379,6 +396,7 @@ graph TD
 **Problem:** Concurrent database access during server restarts caused I/O errors.
 
 **Solution:**
+
 - Clean restart procedure: Kill all processes → Delete `.next` → Recreate database → Start server
 - WAL mode reduces lock contention for production use
 
@@ -563,17 +581,20 @@ With authentication and database in place, you can now implement:
 ## References
 
 **Documentation:**
+
 - [better-auth Documentation](https://www.better-auth.com/docs)
 - [Bun SQLite Documentation](https://bun.sh/docs/api/sqlite)
 - [Next.js App Router](https://nextjs.org/docs/app)
 
 **Key Packages:**
+
 - `better-auth@1.4.18` - Authentication framework
 - `bun:sqlite` - Built-in SQLite (via Bun runtime)
 
 ## Maintenance Notes
 
 **Database Migrations:**
+
 ```bash
 # Create fresh database
 rm -f data/app.db*
@@ -581,6 +602,7 @@ bun run scripts/migrate.ts
 ```
 
 **Test Authentication:**
+
 ```bash
 # Run automated tests
 bun run scripts/test-auth.ts
@@ -590,6 +612,7 @@ bun run scripts/check-db.ts
 ```
 
 **Development Server:**
+
 ```bash
 # Start with Bun runtime
 bun run dev
@@ -599,6 +622,7 @@ rm -rf .next && bun run dev
 ```
 
 **Environment Setup:**
+
 ```bash
 # Generate new secret
 openssl rand -base64 32

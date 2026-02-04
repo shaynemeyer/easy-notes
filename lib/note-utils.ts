@@ -69,7 +69,7 @@ export function formatNoteDate(isoDate: string): string {
     return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
   } catch (error) {
     return 'Invalid date';

@@ -166,11 +166,7 @@ import { protectRoute } from '@/lib/session';
 import { getNoteById } from '@/lib/notes';
 import { notFound } from 'next/navigation';
 
-export default async function NoteEditorPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function NoteEditorPage({ params }: { params: Promise<{ id: string }> }) {
   // Protect route and get authenticated user
   const user = await protectRoute(`/notes/${(await params).id}`);
   const { id } = await params;
@@ -200,11 +196,7 @@ Ensure this route has NO authentication check:
 import { getNoteByPublicSlug } from '@/lib/notes';
 import { notFound } from 'next/navigation';
 
-export default async function PublicNotePage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function PublicNotePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
   // No auth check - this is intentionally public

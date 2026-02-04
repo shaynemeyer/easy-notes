@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface InputProps {
   label: string;
@@ -15,7 +15,7 @@ interface InputProps {
 export function Input({
   label,
   error,
-  type = "text",
+  type = 'text',
   value,
   onChange,
   onFocus,
@@ -24,11 +24,8 @@ export function Input({
   disabled = false,
 }: InputProps) {
   return (
-    <div className="space-y-2">
-      <label
-        htmlFor={name}
-        className="block text-sm font-medium text-zinc-900 dark:text-zinc-100"
-      >
+    <div className='space-y-2'>
+      <label htmlFor={name} className='block text-sm font-medium text-zinc-900 dark:text-zinc-100'>
         {label}
       </label>
       <input
@@ -41,12 +38,10 @@ export function Input({
         placeholder={placeholder}
         disabled={disabled}
         className={`w-full px-4 py-2 border rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-800 dark:text-zinc-100 ${
-          error
-            ? "border-red-500 dark:border-red-500"
-            : "border-zinc-300 dark:border-zinc-700"
+          error ? 'border-red-500 dark:border-red-500' : 'border-zinc-300 dark:border-zinc-700'
         }`}
       />
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && <p className='text-sm text-red-500'>{error}</p>}
     </div>
   );
 }

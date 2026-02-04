@@ -72,14 +72,12 @@ function getDatabase() {
 **Resolution** (lib/auth.ts:1-12):
 
 ```typescript
-import { betterAuth } from "better-auth";
-import { getDb } from "@/lib/db";
+import { betterAuth } from 'better-auth';
+import { getDb } from '@/lib/db';
 
 // Validate required environment variables
 if (!process.env.BETTER_AUTH_SECRET) {
-  throw new Error(
-    "BETTER_AUTH_SECRET is required. Generate one with: openssl rand -base64 32"
-  );
+  throw new Error('BETTER_AUTH_SECRET is required. Generate one with: openssl rand -base64 32');
 }
 
 export const auth = betterAuth({
@@ -150,9 +148,7 @@ export function query<T>(sql: string, params?: any[]): T[] {
 export function get<T>(sql: string, params?: any[]): T | undefined {
   const db = getDb();
   const stmt = db.query<T, any>(sql);
-  return params
-    ? (stmt.get(...params) ?? undefined)
-    : (stmt.get() ?? undefined);
+  return params ? (stmt.get(...params) ?? undefined) : (stmt.get() ?? undefined);
 }
 
 export function run(sql: string, params?: any[]) {
@@ -184,6 +180,7 @@ export function run(sql: string, params?: any[]) {
 **Security**: All authenticated functions enforce `user_id = ?` in SQL queries (SPEC.md:382)
 
 **Additional Features**:
+
 - Proper type mapping: `NoteRow` (DB) → `Note` (app model)
 - Boolean conversion: `is_public` (0/1) → `isPublic` (boolean)
 - CamelCase mapping: `user_id` → `userId`, `content_json` → `contentJson`
@@ -221,8 +218,8 @@ BETTER_AUTH_URL=http://localhost:3000
 The `require("bun:sqlite")` lazy-loading pattern has been removed. Now uses standard import pattern:
 
 ```typescript
-import { betterAuth } from "better-auth";
-import { getDb } from "@/lib/db";
+import { betterAuth } from 'better-auth';
+import { getDb } from '@/lib/db';
 
 export const auth = betterAuth({
   database: getDb(),
@@ -246,7 +243,7 @@ export type Note = {
   userId: string;
   title: string;
   contentJson: string;
-  isPublic: boolean;      // Mapped from is_public (0/1 → boolean)
+  isPublic: boolean; // Mapped from is_public (0/1 → boolean)
   publicSlug: string | null;
   createdAt: string;
   updatedAt: string;

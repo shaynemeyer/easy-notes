@@ -120,9 +120,7 @@ const db = getDb();
 
 // Query notes for a user
 const notes = db
-  .query<NoteRow>(
-    'SELECT * FROM notes WHERE user_id = ? ORDER BY created_at DESC',
-  )
+  .query<NoteRow>('SELECT * FROM notes WHERE user_id = ? ORDER BY created_at DESC')
   .all(userId);
 
 // Insert a note
@@ -377,10 +375,7 @@ const now = new Date().toISOString();
 import { customAlphabet } from 'nanoid';
 
 // URL-safe characters, 16 chars long
-const nanoid = customAlphabet(
-  '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
-  16,
-);
+const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 16);
 
 const publicSlug = nanoid();
 ```

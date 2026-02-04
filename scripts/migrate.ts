@@ -1,14 +1,14 @@
 #!/usr/bin/env bun
 
-import { Database } from "bun:sqlite";
+import { Database } from 'bun:sqlite';
 
-const dbPath = process.env.DATABASE_PATH || "data/app.db";
+const dbPath = process.env.DATABASE_PATH || 'data/app.db';
 console.log(`Migrating database at ${dbPath}...`);
 
 const db = new Database(dbPath, { create: true });
 
 // Enable WAL mode
-db.exec("PRAGMA journal_mode = WAL;");
+db.exec('PRAGMA journal_mode = WAL;');
 
 // Create better-auth tables
 db.exec(`
@@ -66,8 +66,8 @@ db.exec(`
 `);
 
 // Create indexes for auth tables
-db.exec("CREATE INDEX IF NOT EXISTS idx_session_userId ON session(userId);");
-db.exec("CREATE INDEX IF NOT EXISTS idx_account_userId ON account(userId);");
+db.exec('CREATE INDEX IF NOT EXISTS idx_session_userId ON session(userId);');
+db.exec('CREATE INDEX IF NOT EXISTS idx_account_userId ON account(userId);');
 
 // Create notes table
 db.exec(`
@@ -84,9 +84,9 @@ db.exec(`
 `);
 
 // Create indexes for notes table
-db.exec("CREATE INDEX IF NOT EXISTS idx_notes_user_id ON notes(user_id);");
-db.exec("CREATE INDEX IF NOT EXISTS idx_notes_public_slug ON notes(public_slug);");
-db.exec("CREATE INDEX IF NOT EXISTS idx_notes_is_public ON notes(is_public);");
+db.exec('CREATE INDEX IF NOT EXISTS idx_notes_user_id ON notes(user_id);');
+db.exec('CREATE INDEX IF NOT EXISTS idx_notes_public_slug ON notes(public_slug);');
+db.exec('CREATE INDEX IF NOT EXISTS idx_notes_is_public ON notes(is_public);');
 
-console.log("✓ Migration completed successfully!");
+console.log('✓ Migration completed successfully!');
 db.close();

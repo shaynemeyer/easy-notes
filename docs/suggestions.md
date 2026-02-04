@@ -61,7 +61,7 @@ The authentication and database implementation is **largely correct** with excel
 **Benefit:** Better Next.js Server Actions support
 
 ```typescript
-import { nextCookies } from "better-auth/next-js";
+import { nextCookies } from 'better-auth/next-js';
 
 export const auth = betterAuth({
   database: getDb(),
@@ -78,7 +78,7 @@ export const auth = betterAuth({
     },
   },
   secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
   plugins: [nextCookies()], // Add this - must be last plugin
 });
 ```
@@ -95,10 +95,7 @@ export const auth = betterAuth({
 ```typescript
 export const auth = betterAuth({
   // ... existing config
-  trustedOrigins: [
-    "http://localhost:3000",
-    process.env.BETTER_AUTH_URL || "",
-  ].filter(Boolean),
+  trustedOrigins: ['http://localhost:3000', process.env.BETTER_AUTH_URL || ''].filter(Boolean),
 });
 ```
 
@@ -171,18 +168,12 @@ All functions in `lib/notes.ts` are marked `async` but don't use `await`. They c
 
 ```typescript
 // Current
-export async function getNoteById(
-  userId: string,
-  noteId: string
-): Promise<Note | null> {
+export async function getNoteById(userId: string, noteId: string): Promise<Note | null> {
   // ... no await calls
 }
 
 // Suggested
-export function getNoteById(
-  userId: string,
-  noteId: string
-): Note | null {
+export function getNoteById(userId: string, noteId: string): Note | null {
   // ... same implementation
 }
 ```
@@ -222,6 +213,7 @@ These are not errors, just incomplete features from the spec:
 When implementing the API layer:
 
 1. **Add Zod validation** before database writes
+
    ```typescript
    const noteSchema = z.object({
      title: z.string().min(1).max(255),
@@ -230,11 +222,13 @@ When implementing the API layer:
    ```
 
 2. **Implement rate limiting** for public routes to prevent abuse
+
    ```typescript
    // Consider using @upstash/ratelimit or similar
    ```
 
 3. **Add request size limits** to prevent large payload attacks
+
    ```typescript
    // Next.js config or middleware
    export const config = {
@@ -257,11 +251,11 @@ When implementing the API layer:
        headers: [
          {
            key: 'Content-Security-Policy',
-           value: "default-src 'self'; script-src 'self' 'unsafe-inline'"
-         }
-       ]
-     }
-   ]
+           value: "default-src 'self'; script-src 'self' 'unsafe-inline'",
+         },
+       ],
+     },
+   ];
    ```
 
 ---

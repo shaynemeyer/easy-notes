@@ -27,10 +27,7 @@ Create helper functions to:
 **Implementation:**
 
 ```typescript
-export function generateNotePreview(
-  contentJson: string,
-  maxLength = 150,
-): string {
+export function generateNotePreview(contentJson: string, maxLength = 150): string {
   // Parse TipTap JSON and extract text from nodes
   // Truncate to maxLength with ellipsis
 }

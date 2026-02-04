@@ -1,4 +1,4 @@
-import { Database } from "bun:sqlite";
+import { Database } from 'bun:sqlite';
 
 export interface NoteRow {
   id: string;
@@ -15,11 +15,11 @@ let db: Database | null = null;
 
 export function getDb(): Database {
   if (!db) {
-    const dbPath = process.env.DATABASE_PATH || "data/app.db";
+    const dbPath = process.env.DATABASE_PATH || 'data/app.db';
     db = new Database(dbPath, { create: true });
 
     // Enable WAL mode for better read/write concurrency
-    db.exec("PRAGMA journal_mode = WAL;");
+    db.exec('PRAGMA journal_mode = WAL;');
 
     // Create notes table if not exists
     db.exec(`
