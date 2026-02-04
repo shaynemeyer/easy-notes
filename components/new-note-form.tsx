@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { NoteEditor } from '@/components/note-editor';
+import { ShareNoteToggle } from '@/components/share-note-toggle';
 
 interface NewNoteFormProps {
   onSubmit: (formData: FormData) => Promise<void>;
@@ -17,6 +18,7 @@ const EMPTY_TIPTAP_DOC = JSON.stringify({
 export function NewNoteForm({ onSubmit }: NewNoteFormProps) {
   const [title, setTitle] = useState('Untitled note');
   const [contentJson, setContentJson] = useState(EMPTY_TIPTAP_DOC);
+  const [isPublic, setIsPublic] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -29,6 +31,7 @@ export function NewNoteForm({ onSubmit }: NewNoteFormProps) {
       const formData = new FormData();
       formData.append('title', title);
       formData.append('contentJson', contentJson);
+      formData.append('isPublic', String(isPublic));
 
       await onSubmit(formData);
     } catch (err) {
@@ -68,6 +71,8 @@ export function NewNoteForm({ onSubmit }: NewNoteFormProps) {
         </label>
         <NoteEditor initialContent={contentJson} onChange={setContentJson} editable={true} />
       </div>
+
+      <ShareNoteToggle value={isPublic} onChange={setIsPublic} />
 
       <Button type='submit' loading={isSubmitting} disabled={isSubmitting}>
         Create Note

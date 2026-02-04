@@ -75,3 +75,11 @@ export function formatNoteDate(isoDate: string): string {
     return 'Invalid date';
   }
 }
+
+/**
+ * Generate the full public URL for a note given its slug
+ */
+export function getPublicNoteUrl(slug: string): string {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || '';
+  return baseUrl ? `${baseUrl}/p/${slug}` : `/p/${slug}`;
+}

@@ -38,17 +38,19 @@ const EMPTY_TIPTAP_DOC = JSON.stringify({
  */
 export async function createNote(
   userId: string,
-  data: { title?: string; contentJson?: string } = {},
+  data: { title?: string; contentJson?: string; isPublic?: boolean } = {},
 ): Promise<Note> {
   const id = nanoid();
   const title = data.title || 'Untitled note';
   const contentJson = data.contentJson || EMPTY_TIPTAP_DOC;
   const now = new Date().toISOString();
+  const isPublic = data.isPublic ?? false;
+  const publicSlug = isPublic ? nanoid(16) : null;
 
   run(
     `INSERT INTO notes (id, user_id, title, content_json, is_public, public_slug, created_at, updated_at)
-     VALUES (?, ?, ?, ?, 0, NULL, ?, ?)`,
-    [id, userId, title, contentJson, now, now],
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [id, userId, title, contentJson, isPublic ? 1 : 0, publicSlug, now, now],
   );
 
   const row = get<NoteRow>('SELECT * FROM notes WHERE id = ?', [id]);
@@ -85,7 +87,7 @@ export async function getNotesByUser(userId: string): Promise<Note[]> {
 export async function updateNote(
   userId: string,
   noteId: string,
-  data: Partial<{ title: string; contentJson: string }>,
+  data: Partial<{ title: string; contentJson: string; isPublic: boolean }>,
 ): Promise<Note | null> {
   // First verify the note exists and belongs to the user
   const existing = await getNoteById(userId, noteId);
@@ -104,6 +106,17 @@ export async function updateNote(
   if (data.contentJson !== undefined) {
     updates.push('content_json = ?');
     params.push(data.contentJson);
+  }
+
+  if (data.isPublic !== undefined) {
+    updates.push('is_public = ?');
+    params.push(data.isPublic ? 1 : 0);
+
+    // Generate slug if enabling public sharing and no slug exists
+    if (data.isPublic && !existing.publicSlug) {
+      updates.push('public_slug = ?');
+      params.push(nanoid(16));
+    }
   }
 
   if (updates.length === 0) {

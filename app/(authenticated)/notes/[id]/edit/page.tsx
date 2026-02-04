@@ -40,6 +40,8 @@ export default async function EditNotePage({ params }: { params: Promise<{ id: s
         noteId={id}
         initialTitle={note.title}
         initialContent={note.contentJson}
+        initialIsPublic={note.isPublic}
+        publicSlug={note.publicSlug}
         onSubmit={updateNoteAction}
       />
     </div>

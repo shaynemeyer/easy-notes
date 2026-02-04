@@ -52,20 +52,20 @@ This test plan covers the new note creation functionality, including the header 
 ## Test Results Summary
 
 **Total Tests:** 63
-**Passed:** **_
-**Failed:** _**
-**Blocked:** **_
-**Not Tested:** _**
+**Passed:** **\_
+**Failed:** \_**
+**Blocked:** **\_
+**Not Tested:** \_**
 
-**Critical Issues Found:** **_
-**High Priority Issues:** _**
-**Medium Priority Issues:** **_
-**Low Priority Issues:** _**
+**Critical Issues Found:** **\_
+**High Priority Issues:** \_**
+**Medium Priority Issues:** **\_
+**Low Priority Issues:** \_**
 
 ## Sign-off
 
-**Tested By:** ****\_\_****
-**Date:** ****\_\_****
+**Tested By:** \***\*\_\_\*\***
+**Date:** \***\*\_\_\*\***
 **Status:** ⬜ Approved / ⬜ Rejected / ⬜ Needs Revision
 
 **Notes:**

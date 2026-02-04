@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { requireAuth } from '@/lib/session';
 import { getNotesByUser } from '@/lib/notes';
-import { generateNotePreview, formatNoteDate } from '@/lib/note-utils';
+import { NoteCard } from '@/components/note-card';
 
 export default async function DashboardPage() {
   const user = await requireAuth();
@@ -34,21 +34,7 @@ export default async function DashboardPage() {
       ) : (
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
           {notes.map((note) => (
-            <Link
-              key={note.id}
-              href={`/notes/${note.id}`}
-              className='block p-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
-            >
-              <h2 className='text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2 line-clamp-1'>
-                {note.title}
-              </h2>
-              <p className='text-sm text-zinc-600 dark:text-zinc-400 mb-3 line-clamp-3'>
-                {generateNotePreview(note.contentJson)}
-              </p>
-              <p className='text-xs text-zinc-500 dark:text-zinc-500'>
-                Updated {formatNoteDate(note.updatedAt)}
-              </p>
-            </Link>
+            <NoteCard key={note.id} note={note} />
           ))}
         </div>
       )}

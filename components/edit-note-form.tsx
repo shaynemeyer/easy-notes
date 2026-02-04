@@ -4,12 +4,15 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { NoteEditor } from '@/components/note-editor';
+import { ShareNoteToggle } from '@/components/share-note-toggle';
 import Link from 'next/link';
 
 interface EditNoteFormProps {
   noteId: string;
   initialTitle: string;
   initialContent: string;
+  initialIsPublic: boolean;
+  publicSlug?: string | null;
   onSubmit: (noteId: string, formData: FormData) => Promise<void>;
 }
 
@@ -17,10 +20,13 @@ export function EditNoteForm({
   noteId,
   initialTitle,
   initialContent,
+  initialIsPublic,
+  publicSlug,
   onSubmit,
 }: EditNoteFormProps) {
   const [title, setTitle] = useState(initialTitle);
   const [contentJson, setContentJson] = useState(initialContent);
+  const [isPublic, setIsPublic] = useState(initialIsPublic);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -33,6 +39,7 @@ export function EditNoteForm({
       const formData = new FormData();
       formData.append('title', title);
       formData.append('contentJson', contentJson);
+      formData.append('isPublic', String(isPublic));
 
       await onSubmit(noteId, formData);
     } catch (err) {
@@ -67,6 +74,8 @@ export function EditNoteForm({
         </label>
         <NoteEditor initialContent={contentJson} onChange={setContentJson} editable={true} />
       </div>
+
+      <ShareNoteToggle value={isPublic} onChange={setIsPublic} publicSlug={publicSlug} />
 
       <div className='flex gap-3'>
         <Button type='submit' loading={isSubmitting} disabled={isSubmitting}>

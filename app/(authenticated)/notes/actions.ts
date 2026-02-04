@@ -25,6 +25,7 @@ export async function createNoteAction(formData: FormData) {
 
   const title = formData.get('title') as string;
   const contentJson = formData.get('contentJson') as string;
+  const isPublic = formData.get('isPublic') === 'true';
 
   try {
     const validated = noteSchema.parse({ title, contentJson });
@@ -32,6 +33,7 @@ export async function createNoteAction(formData: FormData) {
     const note = await createNote(user.id, {
       title: validated.title,
       contentJson: validated.contentJson,
+      isPublic,
     });
 
     redirect(`/notes/${note.id}`);
@@ -47,12 +49,14 @@ export async function updateNoteAction(noteId: string, formData: FormData) {
   const user = await requireAuth();
   const title = formData.get('title') as string;
   const contentJson = formData.get('contentJson') as string;
+  const isPublic = formData.get('isPublic') === 'true';
 
   try {
     const validated = noteSchema.parse({ title, contentJson });
     const note = await updateNote(user.id, noteId, {
       title: validated.title,
       contentJson: validated.contentJson,
+      isPublic,
     });
 
     if (!note) {
